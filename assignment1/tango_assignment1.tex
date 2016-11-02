@@ -2,6 +2,9 @@
 \usepackage[utf8]{inputenc}
 \usepackage{hyperref}
 \usepackage{amsmath}
+\usepackage{listings}
+
+\setlength\parindent{0pt}
 
 \title{
 	\Huge{Introduction to Web Science} \\
@@ -33,7 +36,7 @@
 	\item Source MAC Address: \texttt{00:13:10:e8:dd:52}
 	\item Destination MAC Address: \texttt{00:27:10:21:fa:48}
 	\item Protocol: Address Resolution Protocol 
-	\item The last two blocks of the targets IP Address (\texttt{192.168.2.103}).
+	\item The penultimate field is the targets MAC Address and the last field is the targets IP Address.
 \end{enumerate}
 
 \section{Cable Issue}
@@ -44,8 +47,112 @@ Given the speed of light $c = 3 \cdot 10^8 \frac{m}{s}$ and the formula for the 
 
 \section{Basic Network Tools}
 
+\lstset{breaklines=true, frame=single}
+
+\textbf{1.} The \% packet loss if at all it happened after sending 100 packets.
+
+Home: 0\%
+
+University:
+
+\begin{lstlisting}[caption=ping home]
+	ping -c 100 -i 0.2  www.wikipedia.de
+	...
+	100 packets transmitted, 100 received, 0% packet loss, time 19883ms
+	rtt min/avg/max/mdev = 18.037/21.074/29.851/1.646 ms
+\end{lstlisting}
+
+\textbf{2.} Size of the packet sent to Wikipedia server.
+
+Home: 64 bytes
+
+University: 64 bytes
+
+\begin{lstlisting}[caption=man ping]
+	       -s packetsize
+	                     Specifies the number of data bytes to be sent.  The default is 56, which translates into 64 ICMP data
+			     bytes when combined with the 8 bytes of ICMP header data.
+\end{lstlisting}
+
+\textbf{3.} IP address of your machine and the Wikipedia server
+
+Home: 192.168.2.115, 91.198.174.192
+
+University:
+
+\begin{lstlisting}[caption=ifconfig home]
+	ifconfig
+	...
+	bond0: flags=5187<UP,BROADCAST,RUNNING,MASTER,MULTICAST>  mtu 1500
+	inet 192.168.2.115  netmask 255.255.255.0  broadcast 192.168.2.255
+	inet6 fd21:22dd:f528:1:d6b5:5652:241e:f450  prefixlen 64  scopeid 0x0<global>
+	inet6 fd21:22dd:f528:1:f2de:f1ff:fe03:c9c9  prefixlen 64  scopeid 0x0<global>
+	inet6 2003:c5:5bd7:2653:d8fd:5b7d:730d:9337  prefixlen 64  scopeid 0x0<global>
+	inet6 2003:c5:5bd7:2653:f2de:f1ff:fe03:c9c9  prefixlen 64  scopeid 0x0<global>
+	inet6 fe80::f2de:f1ff:fe03:c9c9  prefixlen 64  scopeid 0x20<link>
+	ether f0:de:f1:03:c9:c9  txqueuelen 1000  (Ethernet)
+	RX packets 7563  bytes 6410345 (6.1 MiB)
+	RX errors 0  dropped 0  overruns 0  frame 0
+	TX packets 5621  bytes 1106251 (1.0 MiB)
+	TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+\end{lstlisting}
+
+\begin{lstlisting}[caption=arp wikipedia.org home]
+	arp wikipedia.org
+	...
+	wikipedia.org (91.198.174.192) -- no entry	
+\end{lstlisting}
+
+\textbf{4.} Query Time for DNS query of the above url.
+
+Home: 3msec
+
+University: 
+
+\begin{lstlisting}[caption=dig home]
+	dig wikipedia.org
+	...
+	; <<>> DiG 9.11.0 <<>> wikipedia.org
+	;; global options: +cmd
+	;; Got answer:
+	;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 7395
+	;; flags: qr rd ra ad; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0
+
+	;; QUESTION SECTION:
+	;wikipedia.org.			IN	A
+
+	;; ANSWER SECTION:
+	wikipedia.org.		38	IN	A	91.198.174.192
+
+	;; Query time: 3 msec
+	;; SERVER: 192.168.2.1#53(192.168.2.1)
+	;; WHEN: Wed Nov 02 06:22:14 UTC 2016
+	;; MSG SIZE  rcvd: 47
+\end{lstlisting}
+
+\textbf{5.} Number of Hops in between your machine and the server
+
+Home: didn't finish after 100+ hops
+
+University: 
+
+\textbf{6.} MAC address of the device that is acting as your network gateway.
+
+Home:
+
+University: 
+
+\begin{lstlisting}[caption=arp home]
+	arp -n
+	...
+	Address                  HWtype  HWaddress           Flags Mask            Iface
+	192.168.2.1              ether   d4:21:22:dd:f5:28   C                     bond0
+\end{lstlisting}
+
+
 \section{Simple Python Programming}
 
-see \texttt{src/task4.py}
+\lstset{language=python, breaklines=true, frame=single}
+\lstinputlisting{tango_assignment1_4.py}
 
 \end{document}
