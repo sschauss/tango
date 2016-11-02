@@ -1,0 +1,221 @@
+% Enable warnings about problematic code
+\RequirePackage[l2tabu, orthodox]{nag}
+
+\documentclass{WeSTassignment}
+
+% The lecture title, e.g. "Web Information Retrieval".
+\lecture{Introduction to Web Science}
+
+% Assignment number.
+% The names of the group members(s)
+\author{%
+  Mariya Chkalova \\{\normalsize\mailto{mchkalova@uni-koblenz.de}} \and
+  Arsenii Smyrnov\\{\normalsize\mailto{smyrnov@uni-koblenz.de}} \and
+   Simon Schauß\\{\normalsize\mailto{sschauss@uni-koblenz.de}}
+}
+% Assignment number.
+\assignmentnumber{1}
+% Institute of lecture.
+\institute{%
+  Group Tango\\%
+  Institute of Web Science and Technologies\\%
+  Department of Computer Science\\%
+  University of Koblenz-Landau%
+}
+% Date until students should submit their solutions.
+\datesubmission{November 2, 2016, 10:00 a.m.}
+% Date on which the assignments will be discussed in the tutorial.
+\datetutorial{November 4th, 2016, 12:00 p.m.}
+
+% Set langauge of text.
+\setdefaultlanguage[
+  variant = american, % Use American instead of Britsh English.
+]{english}
+
+% Specify bib file location.
+\addbibresource{bibliography.bib}
+
+% For left aligned centerd boxes
+% see http://tex.stackexchange.com/a/25591/75225
+\usepackage{varwidth}
+
+% ==============================================================================
+% Document
+
+\begin{document}
+
+\maketitle
+
+The main objective of this assignment is for you to use different tools with which you can understand the network that you are connected to or you are connecting to in a better sense.
+These tasks are not always specific to \enquote{Introduction to Web Science}.
+For all the assignment questions that require you to write a code, make sure to include the code in the answer sheet, along with a separate python file. Where screen shots are required, please add them in the answers directly and not as separate files. 
+
+% As such, this assignment will not award any points, and you will \emph{not} have
+% to submit your solution.
+% If you want to know whether your solutions were correct, mail them to
+% \mailto{lukas@uni-koblenz.de}.
+
+% ------------------------------------------------------------------------------
+
+\section{Ethernet Frame (5 Points)}
+
+Ethernet Frame is of the given structure:
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{1.png}
+   \caption{Ethernet Frame Structure}
+     \label{fig:ethernet}
+\end{figure}
+
+Given below is an Ethernet frame without the Preamble and the Frame Check Sequence.\\ 
+ 
+\texttt{00 27 10 21 fa 48 00 13 \hspace{0.5cm} 10 e8 dd 52 08 06 00 01\\ 08 00 06 04 00 01 00 13 \hspace{0.5cm} 10 e8 dd 52 c0 a8 02 01\\ 00 00 00 00 00 00 c0 a8 \hspace{0.5cm} 02 67} \\ \\
+
+\underline{Find}:
+\begin{enumerate}
+\item Source MAC Address
+\item Destination MAC Address
+\item What protocol is inside the data payload?
+\item Please mention what the last 2 fields hold in the above frame.
+\end{enumerate}
+
+\underline{Solution}: 
+\begin{enumerate}
+	\item Source MAC Address: \texttt{00:13:10:e8:dd:52}
+	\item Destination MAC Address: \texttt{00:27:10:21:fa:48}
+	\item Protocol: Address Resolution Protocol 
+	\item The last two blocks of the targets contain IP Address (\texttt{192.168.2.103}).
+\end{enumerate}
+
+% ------------------------------------------------------------------------------
+
+\section{Cable Issue (5 Points)}
+
+Let us consider we have two cables of 20 meters each. One of them is in a 100MBps network while the other is in a 10MBps network. If you had to transfer data through each of them, how much time it would take for the first bit to arrive in each setting? (For your calculation you can assume that the speed of light takes the same value as in the videos.) Please provide formulas and calculatoins along with your results. \\
+\\
+\underline{Solution}: 
+\\
+Let $c$ be the speed of light, $l$ the length of the cable and $t$ the time it takes for the first bit to travel the length $l$. 
+As the length of the cables are equal and the networks bandwidth doesn't change the propagation delay, the calculation for both networks are the same.  
+Given the speed of light $c = 3 \cdot 10^8 \frac{m}{s}$ and the formula for the propagation delay $t = \frac{l}{c}$, the propagation delay is $t = \frac{20}{3 \cdot 10^8}s \approx 67ns$
+
+% ------------------------------------------------------------------------------
+
+
+\section{Basic Network Tools (10 Points)}
+
+Listed below are some of the commands which you need to "google" to understand what they stand for:
+\begin{enumerate}
+\item \emph{ipconfig / ifconfig}
+\item \emph{ping}
+\item \emph{traceroute}
+\item \emph{arp}
+\item \emph{dig}
+\end{enumerate}
+
+Consider a situation in which you need to check if \url{www.wikipedia.org} is reachable or not. Using the knowledge you gained above to \underline{find the following information}:
+\begin{enumerate}
+\itemsep0em
+\item The \emph{\% packet loss} if at all it happened after sending 100 packets. 
+\item \emph{Size} of the packet sent to \emph{Wikipedia} server
+\item \emph{IP address} of your machine and the \emph{Wikipedia} server
+\item \emph{Query Time} for DNS query of the above url.
+\item Number of \emph{Hops} in between your machine and the server
+\item MAC address of the device that is acting as your network gateway. 
+\end{enumerate}
+
+Do this once in the university and once in your home/dormitory network. With your answers, you must paste the screen shots to validate your find.
+
+\underline{Solution}: 
+\begin{enumerate}
+\itemsep0em
+\item The \emph{\% packet loss} if at all it happened after sending 100 packets.
+\\
+\textbf{Command:} ping www.wikipedia.org -q -c 100 | grep 'packet loss'
+\\
+\textbf{Result:} Packet loss = 0 in both cases.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{t1.png}
+     \caption{100 packets ping}
+     \label{fig:t1}
+\end{figure}
+\item \emph{Size} of the packet sent to \emph{Wikipedia} server
+\\
+\textbf{Command:} ping www.wikipedia.org -q -c 1| grep 'bytes of data'
+\\
+\textbf{Result:} Size of the packet = 56 bytes in both cases. \\ 84 bytes  Ping Bytes Sent = 56 bytes Ping Packet Size + Ping Header Packet Size (28 bytes). May be changed with flag -s for ping command.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{t2.png}
+     \caption{Packet size}
+     \label{fig:t2}
+\end{figure}
+\item \emph{IP address} of your machine and the \emph{Wikipedia} server
+\\
+\textbf{Command:} \\Server IP: ping www.wikipedia.org -q -c 1| grep 'PING www.wikipedia.org'\\
+Local IP: ip addr show wlan0 | grep 'inet'\\
+External IP IP: wget -qO- http://ipecho.net/plain ; echo
+\\
+\textbf{Result:}\\   wikipedia server IP = 91.198.174.192;\\ home local IP = 192.168.1.101; home external IP = 94.242.228.97;\\ university local IP = 141.26.190.253; university external IP = 141.26.190.253.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{t3.png}
+     \caption{Server and PC addresses}
+     \label{fig:t3}
+\end{figure}
+\item \emph{Query Time} for DNS query of the above url.
+\\
+\textbf{Command:} dig www.wikipedia.org | grep "Query time:"
+\\
+\textbf{Result:} University Query time = 1 msec; Home Query time = 30 msec.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{t4.png}
+     \caption{Query time}
+     \label{fig:t4}
+\end{figure}
+\item Number of \emph{Hops} in between your machine and the server
+\\
+\textbf{Command:} traceroute -I www.wikipedia.org
+\\
+\textbf{Result:} University - 11 hops; Home - 9 hops. 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{t5.png}
+     \caption{Trace route}
+     \label{fig:t5}
+\end{figure}
+\item MAC address of the device that is acting as your network gateway. 
+\\
+\textbf{Command:} arp -a
+\\
+\textbf{Result:} For university = 14:18:77:45:b1:bd ; for home network = b0:48:7a:bb:4f:48. 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{t6.png}
+     \caption{MAC addresses}
+     \label{fig:t6}
+\end{figure}
+\end{enumerate}
+% ------------------------------------------------------------------------------
+
+\section{Simple Python Programming (10 Points)}
+
+Write a simple \underline{python program that does the following}:
+\begin{enumerate}
+\item Generate a random number sequence of 10 values between 0 to 90. 
+\item Perform \texttt{sine} and \texttt{cosine} operation on numbers generated. 
+\item Store the values in two different arrays named SIN \& COSIN respectively. 
+\item Plot the values of SIN \& COSIN in two different colors. 
+\item The plot should have labeled axes and legend.
+\end{enumerate}
+
+\underline{Solution}: 
+
+see \texttt{src/task4.py}
+
+
+
+
+\end{document}
