@@ -227,6 +227,34 @@ Also you can assume the DNS requests and responses will fit inside one IP packet
 
 
 % ------------------------------------------------------------------------------
+\textbf{Answer:}\\
+1. 67.4.5.2 creates ip-packet. Source address – 67.4.5.2; destination address – 67.68.3.1 (R1 – ISP).
+
+2. Ip-packet is sent to R1 over eth0 (67.68.3.1).
+
+3. R1 sends the request to R3 over eth2 (88.4.32.6).
+
+4. R3 (88.6.32.1) receives the request and sends it to the 25.8.2.1 (root name server) over eth2 (25.30.1.7).
+
+5. R3 receives the response from root name server (doesn’t have subdomain.webscienceexampledomain.com) and sends it to R1.
+
+6. R1 sends the request to R2 over eth3 (141.71.20.1).
+
+7. R2 receives the request and sends it over eth0 (156.3.0.6) to 156.3.20.2 (webscienceexampledomain.com name server).
+
+8. Name server (156.3.20.2) returns the response to R2.
+
+9. R2 sends the response to R1.
+
+10. R1 sends packet to the 26.155.36.7 (sub-domain) over eth2 (26.3.2.1).
+
+11. Sub-domain sends the IP-address of subdomain.webscienceexampledomain.com. 
+
+12. R1 receives the response at eth3  (141.71.20.1) and sends it to 67.4.5.2 over eth0 (67.68.3.1).
+
+13. 67.4.5.2 gets IP-address of subdomain.webscienceexampledomain.com.
+
+14. IP-address of subdomain.webscienceexampledomain.com is cashed by ISP.
 
 
 
