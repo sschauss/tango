@@ -56,6 +56,12 @@ def program(arg):
     # Perform HTTP get via new socket
     data = get(url)
 
+    # Catch responses that are not covered
+    if not data.startswith(b"HTTP/1.1 200 OK"):
+        print("HTTP request is not OK, encoded response below:")
+        print(data.decode())
+        return
+
     # Parse response and write output
     header, body = decoderesponse(data)
 
