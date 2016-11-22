@@ -1,44 +1,85 @@
 import socket
 import sys
+import gzip
 from urllib.parse import urlparse
 
-CRLF = "\r\n\r\n"
+# Some separators as defined by HTTP standards
+CRLF = str(bytes([13, 10]))
+TERMINATOR = bytes([13, 10, 13, 10])
 
 
-def httpGet(url):
+def get(url, port=80, buffersize=4096, encoding="UTF-8"):
+    """HTTP GETs the given URL and returns the raw data response"""
     data = bytearray()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as httpsock:
+        httpsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        httpsock.connect((url.hostname, port))
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as http_socket:
-        http_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        http_socket.connect((url.hostname, 80))
-        request_header = ''
-        request_header += 'GET %s?%s HTTP/1.0%s' % (url.path, url.query, CRLF)
-        request_header += 'Host: %s %s' % (url.netloc, CRLF)
-        request_header += 'Accept-Encoding: compress, gzip%s' % CRLF
-        http_socket.sendall(request_header.encode('UTF-8'))
+        # Make the request, getting path and query from the location, accepting
+        # compress gzip encoding (and identity)
+        request = CRLF.join([
+            "GET %s?%s HTTP/1.0" % (url.path, url.query),
+            "Host: %s" % url.netloc,
+            "Accept-Encoding: compress, gzip"
+        ])
+
+        # Send the entire request
+        httpsock.sendall(request.encode(encoding) + TERMINATOR)
+
+        # Read response into buffer until end
         while True:
-            buffer = http_socket.recv(4096)
+            buffer = httpsock.recv(buffersize)
             data += buffer
             if not buffer:
                 break
+
     return data
 
 
-def parseHttpResponse(data):
-    data_split = ''.join(map(chr, data)).split(CRLF)
-    header = CRLF.join(data_split[:-1])
-    body = data[(len(header)) + len(CRLF):]
-    return header, body
+def decoderesponse(data, encoding="UTF-8"):
+    """Parses the data of a HTTP response, returns: header, body"""
+    # The terminator separates header and body, find it's position
+    pos = data.index(TERMINATOR)
+
+    # Split data at that point, only decode header, as it might be a binary
+    # file
+    return data[:pos].decode(encoding), data[pos + len(TERMINATOR):]
 
 
+def program(arg):
+    """Reads from the argument an URL and downloads it into a header file and
+    the raw content"""
+    # Extract input and output parameters from argument
+    url = urlparse(arg)
+    filename = url.path.split("/")[-1]
+
+    # Perform HTTP get via new socket
+    data = get(url)
+
+    # Parse response and write output
+    header, body = decoderesponse(data)
+
+    print(header)
+    writeheader(filename, header)
+    writebody(filename, header, body)
+
+
+def writeheader(filename, header):
+    """Writes the header file as a text file"""
+    with open("%s.header" % filename, "w") as handle:
+        handle.write(header)
+
+
+def writebody(filename, header, body):
+    """Writes the body file, if response is gzip compressed, decompresses it"""
+    if "Content-Encoding: gzip" in header:
+        with open(filename, "wb") as handle:
+            handle.write(gzip.decompress(body))
+    else:
+        with open(filename, "wb") as handle:
+            handle.write(body)
+
+
+# Main application entry points
 if __name__ == '__main__':
-    url = urlparse(sys.argv[1])
-    file_name = url.path.split('/')[-1]
-    data = httpGet(url)
-    header, body = parseHttpResponse(data)
-
-    with open("%s.header" % file_name, 'w') as response_header_file:
-        response_header_file.write(header)
-
-    with open(file_name, 'wb') as response_body_file:
-        response_body_file.write(body)
+    program(sys.argv[1])
