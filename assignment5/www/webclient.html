@@ -1,0 +1,27 @@
+<html>
+<head>
+    <title>Abusing the HTTP protocol - Example</title>
+</head>
+<h1>Display data from the Server</h1>
+The following line changes on the servers command line input: <br>
+<span id="response" style="color: red">
+    This will be replaced by messages from the server
+</span>
+<script>
+    var node = document.querySelector('#response');
+    var request = new XMLHttpRequest();
+    var contentLength = 0;
+    request.open('GET', 'http://' + location.host + '/poll');
+    request.onreadystatechange = function () {
+        if (request.readyState === 2) {
+            node.innerHTML = null;
+        } else if (request.readyState === 3) {
+            var element = document.createElement('p');
+            element.innerHTML = this.responseText.slice(contentLength);
+            contentLength = this.responseText.length;
+            node.appendChild(element);
+        }
+    };
+    request.send();
+</script>
+</html>
