@@ -117,16 +117,19 @@ def diameter(matrix):
     units = int(capital_e + capital_v * log(capital_v))
 
     # Execute on a thread pool
-    with ThreadPoolExecutor(
-            thread_name_prefix="diam_worker",
-            max_workers=8) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         # Report using TQDM
         with tqdm(
                 desc="APSP calculation",
+                smoothing=.01,
                 total=len(matrix) * units) as progress:
-            # Bind the unit of work
-            uow = lambda n: max(
-                dijkstra(matrix, progress, units, n).values())
+            # Bind the unit of work: for a node, Dijkstra's algorithm is
+            # executed to find all shortest paths; then, the maximum from the
+            # values is taken. Pulling this into the unit of work allows to free
+            # the memory of the distance dictionary. This should keep the memory
+            # overhead low.
+            def uow(n):
+                return max(dijkstra(matrix, progress, units, n).values())
 
             return max(executor.map(uow, matrix.keys()))
 
