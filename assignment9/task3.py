@@ -89,12 +89,19 @@ def dijkstra(matrix, progress, allocated, s):
                 res[v] = x
                 heappush(queue, (x, v))
 
-        # Update one, we might finish earlier
-        progress.update()
-        allocated -= 1
+        try:
+            # Update one, we might finish earlier
+            progress.update()
+            allocated -= 1
+        except ZeroDivisionError:
+            # TQDM has an unsafe division that leads to errors in some cases
+            pass
 
-    # Update the remaining ticks
-    progress.update(allocated)
+    try:
+        # Update the remaining ticks
+        progress.update(allocated)
+    except ZeroDivisionError:
+        pass
 
     return res
 
