@@ -110,12 +110,11 @@ def diameter(matrix):
     """
 
     from concurrent.futures import ThreadPoolExecutor
-    from functools import partial
     from math import log
 
     capital_e = sum(len(v) for v in matrix.values())
     capital_v = len(matrix)
-    worst_case = int(capital_e + capital_v * log(capital_v))
+    units = int(capital_e + capital_v * log(capital_v))
 
     # Execute on a thread pool
     with ThreadPoolExecutor(
@@ -124,12 +123,12 @@ def diameter(matrix):
         # Report using TQDM
         with tqdm(
                 desc="APSP calculation",
-                total=len(matrix) * worst_case) as progress:
+                total=len(matrix) * units) as progress:
             # Bind the unit of work
-            uow = partial(dijkstra, matrix, progress, worst_case)
+            uow = lambda n: max(
+                dijkstra(matrix, progress, units, n).values())
 
-            return max(max(x.values())
-                       for x in executor.map(uow, matrix.keys()))
+            return max(executor.map(uow, matrix.keys()))
 
 
 def task3():
