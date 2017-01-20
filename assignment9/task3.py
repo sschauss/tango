@@ -1,5 +1,8 @@
 from tqdm import tqdm
 
+CURSOR_UP_ONE = '\x1b[1A'
+ERASE_LINE = '\x1b[2K'
+
 
 def read_input():
     """
@@ -51,12 +54,10 @@ def read_input():
     return result, fwd, bwd
 
 
-def dijkstra(matrix, progress, allocated, s):
+def dijkstra(matrix, s):
     """
     Calculates Dijkstra and reports to a common progress bar.
     :param matrix: The matrix representation of the graph
-    :param progress: The Progress to report to
-    :param allocated: The allocated maximum units of work
     :param s: The node to start from
     :return: Returns the distance dictionary for node s
     """
@@ -89,21 +90,13 @@ def dijkstra(matrix, progress, allocated, s):
                 res[v] = x
                 heappush(queue, (x, v))
 
-        try:
-            # Update one, we might finish earlier
-            progress.update()
-            allocated -= 1
-        except ZeroDivisionError:
-            # TQDM has an unsafe division that leads to errors in some cases
-            pass
+    return {k: v for k, v in res.items() if v != inf}
 
-    try:
-        # Update the remaining ticks
-        progress.update(allocated)
-    except ZeroDivisionError:
-        pass
 
-    return res
+def uow(matrix, n):
+    print(CURSOR_UP_ONE + ERASE_LINE + CURSOR_UP_ONE)
+    print('progress: %.3f' % (n / len(matrix)))
+    return max(dijkstra(matrix, n).values())
 
 
 def diameter(matrix):
@@ -116,29 +109,17 @@ def diameter(matrix):
     :return: Returns the diameter as an integer.
     """
 
-    from concurrent.futures import ThreadPoolExecutor
-    from math import log
+    from concurrent.futures import ProcessPoolExecutor
+    from functools import partial
 
-    capital_e = sum(len(v) for v in matrix.values())
-    capital_v = len(matrix)
-    units = int(capital_e + capital_v * log(capital_v))
-
-    # Execute on a thread pool
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        # Report using TQDM
-        with tqdm(
-                desc="APSP calculation",
-                smoothing=.01,
-                total=len(matrix) * units) as progress:
-            # Bind the unit of work: for a node, Dijkstra's algorithm is
-            # executed to find all shortest paths; then, the maximum from the
-            # values is taken. Pulling this into the unit of work allows to free
-            # the memory of the distance dictionary. This should keep the memory
-            # overhead low.
-            def uow(n):
-                return max(dijkstra(matrix, progress, units, n).values())
-
-            return max(executor.map(uow, matrix.keys()))
+    # Execute on a process pool
+    with ProcessPoolExecutor(max_workers=8) as executor:
+        # Bind the unit of work: for a node, Dijkstra's algorithm is
+        # executed to find all shortest paths; then, the maximum from the
+        # values is taken. Pulling this into the unit of work allows to free
+        # the memory of the distance dictionary. This should keep the memory
+        # overhead low.
+        return max(executor.map(partial(uow, matrix), matrix.keys()))
 
 
 def task3():
